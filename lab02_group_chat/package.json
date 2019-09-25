@@ -1,0 +1,11 @@
+{
+  "name": "lab02_group_chat",
+  "version": "1.0.0",
+  "description": "A simple middle-ware based group chat app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Raja Hasnain Anwar",
+  "license": "ISC"
+}
