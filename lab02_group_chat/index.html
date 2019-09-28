@@ -2,23 +2,42 @@
 <html>
 <head>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-
+	<style type="text/css">
+		h3 {
+			display: inline;
+		}
+	</style>
 </head>
 <body>
 	<div class="container">
-		<br>
-		<div class="jumbotron">
-			<h1 class="display-4">Send Message</h1>
-			<br>
-			<input id="name" class="form-control" placeholder="Name">
-			<br>
-			<textarea id="message" class="form-control" placeholder="Your Message Here">
-			</textarea>
-			<br>
-			<button id="send" class="btn btn-success">Send</button>
+		<div class="pull-right"></div>
+		<div id="header" class="page-header" style="display: none;">
 		</div>
-		<div id="messages">
-		 
+		<br>
+		<div id="login" class="jumbotron">
+			<form id="formId">
+				<div class="form-group">
+				    <label for="username">Username</label>
+				    <input type="text" class="form-control" id="username">
+				    <br>
+				    <label for="name">Name</label>
+				    <input type="text" class="form-control" id="name">
+				</div>
+			  <button type="submit" id="submit" class="btn btn-success">Submit</button>
+			</form>
+		</div>
+		<div id="chat" class="jumbotron" style="display: none;">
+			<h2 class="display-4">Send Message</h2>
+			<br>
+			<label for="receiver">To</label>
+			<input type="text" class="form-control" id="receiver" required="true">
+			<br>
+			<label for="message">Message</label>
+			<textarea id="message" class="form-control" placeholder="Your Message Here"></textarea>
+			<br>
+			<button type="submit" id="send" class="btn btn-success">Send</button>
+		</div>
+		<div id="messages" style="display: none;">
 		</div>
 	</div>
 	<script

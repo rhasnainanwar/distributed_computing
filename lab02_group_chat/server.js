@@ -1,5 +1,4 @@
 var express = require('express');
-var mongoose = require('mongoose');
 var bodyParse = require('body-parser');
 
 var app = express();
@@ -8,7 +7,6 @@ app.use(express.static(__dirname));
 app.use(bodyParse.json());
 app.use(bodyParse.urlencoded({extended: false}));
 
-mongoose.set('useUnifiedTopology', true);
 
 var server = app.listen(3000, () => {
 	console.log('server is running on port', server.address().port);
@@ -17,29 +15,33 @@ var server = app.listen(3000, () => {
 var io = require('socket.io').listen(server);
 
 
-mongoose.connect("mongodb://localhost/group_chat",  {useNewUrlParser: true } , (err) => {
-	console.log('mongodb connected', err);
-});
+var connectedUsers = {};
+var messages = {};
 
-var Message = mongoose.model('Message',{ name : String, message : String});
+app.post('/get_messages', (req, res) => {
 
-
-app.get('/messages', (req, res) => {
-	Message.find({},(err, messages)=> {
-    	res.send(messages);
-  	});
+	if(req.body.username){
+		l_messages = messages[req.body.username];
+		res.send(l_messages.reverse());
+	}
 });
 
 app.post('/messages', (req, res) => {
-	var message = new Message(req.body);
-  	message.save((err) => {
-	    if(err)
-	    	sendStatus(500);
-    	io.emit('message', req.body);
-    	res.sendStatus(200);
-  	});
+	var receiver = req.body.receiver.trim();
+	var sender = req.body.sender.trim();
+
+	messages[receiver].push({'name': connectedUsers[sender].name, 'text': req.body.message, 'type': "From: ", 'time': new Date().toGMTString()});
+	messages[sender].push({'name': connectedUsers[receiver].name, 'text': req.body.message, 'type': "To: ", 'time': new Date().toGMTString()});
+
+	io.emit('message');
 });
 
-io.on('connection', () => {
-	console.log('a user is connected');
+io.on('connection', (socket) => {
+	socket.on('register', (data, res) => {
+		if(!connectedUsers.hasOwnProperty(data.username)){
+			connectedUsers[data.username] = {name: data.name};
+			var username = data.username.trim()
+			messages[username] = [];
+		}
+	});
 });

@@ -1,27 +1,53 @@
+var socket = io();
+var username, name;
+
 $(() => {
     $("#send").click(()=>{
        	sendMessage({
-        name: $("#name").val(), 
+        sender: username,
+        receiver: $("#receiver").val(), 
         message:$("#message").val()});
 
+        $("#receiver").val("");
         $("#message").val("");
     });
     getMessages();
 });
 
-function addMessages(message){
-	$("#messages").append('<h4>'+message.name+'</h4> <p>'+message.message+'</p>');
+$(() => {
+    $("#submit").click( (e) => {
+    	e.preventDefault();
+
+        username = $("#username").val();
+        name = $("#name").val();
+
+        $(".pull-right").append("<p><h3>"+name+"</h3><small> @"+username+"</small></p>");
+        $("#chat").show();
+        $("#messages").show();
+
+        $("#login").hide();
+
+    	var formData = {'name': name, 'username': username};
+    	socket.emit('register', formData);
+	});
+});
+
+
+function addMessage(mess){
+	$("#messages").append('<p><small>'+mess.time+'</small></p><h4><small>'+mess.type+'<small/> '+mess.name+'</h4> <p>'+mess.text+'</p>');
 }
 
 function getMessages(){
-	$.get('http://localhost:3000/messages', (data) => {
-   		data.forEach(addMessages);
+    var req = {'username': username};
+
+	$.post('/get_messages', req, (data) => {
+        $("#messages").empty();
+   		data.forEach(addMessage);
    	});
 }
 
 function sendMessage(message){
-	$.post('http://localhost:3000/messages', message);
+	$.post('/messages', message);
 }
 
-var socket = io();
-socket.on('message', addMessages);
+socket.on('message', getMessages);
