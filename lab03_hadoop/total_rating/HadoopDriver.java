@@ -1,6 +1,5 @@
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
@@ -38,14 +37,6 @@ public class HadoopDriver {
 		if(args.length == 2) {
 			conf = new JobConf(HadoopDriver.class);
 			
-			/* UserRatingMapper outputs (IntWritable, IntArrayWritable(Writable[2])) */
-			conf.setMapOutputKeyClass(IntWritable.class);
-			conf.setMapOutputValueClass(IntArrayWritable.class);
-			
-			/* AverageValueReducer outputs (IntWritable, FloatWritable) */
-			conf.setOutputKeyClass(IntWritable.class);
-			conf.setOutputValueClass(FloatWritable.class);
-	
 			/* Pull input and output Paths from the args */
 			FileInputFormat.addInputPath(conf, new Path(args[0]));
 			FileOutputFormat.setOutputPath(conf, new Path(args[1]));
@@ -53,7 +44,15 @@ public class HadoopDriver {
 			/* Set to use Mapper and Reducer classes */
 			conf.setMapperClass(UserRatingMapper.class);
 			conf.setCombinerClass(UserRatingMapper.class);
-			conf.setReducerClass(AverageValueReducer.class);
+			conf.setReducerClass(TotalValueReducer.class);
+
+			/* UserRatingMapper outputs (IntWritable, IntArrayWritable(Writable[2])) */
+			conf.setMapOutputKeyClass(IntWritable.class);
+			conf.setMapOutputValueClass(IntArrayWritable.class);
+			
+			/* TotalValueReducer outputs (IntWritable, IntWritable) */
+			conf.setOutputKeyClass(IntWritable.class);
+			conf.setOutputValueClass(IntWritable.class);
 			
 			conf.set("mapred.child.java.opts", "-Xmx4g");
 		} else {

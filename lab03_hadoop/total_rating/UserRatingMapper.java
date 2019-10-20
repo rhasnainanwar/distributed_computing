@@ -34,7 +34,7 @@ public class UserRatingMapper extends MapReduceBase
 implements Mapper<WritableComparable,Writable,WritableComparable,Writable>,
 Reducer<WritableComparable,Writable,WritableComparable,Writable> {
 	
-	private static Pattern userRatingDate = Pattern.compile("^(\\d+),(\\d+),\\d{4}-\\d{2}-\\d{2}$");
+	private static Pattern userRatingData = Pattern.compile("^(\\d+),(\\d+),\\d{4}-\\d{2}-\\d{2}$");
 	
 	/**
 	 * Given a line of input, if it is a UserID,RatingValue,RatingDate line,
@@ -47,15 +47,14 @@ Reducer<WritableComparable,Writable,WritableComparable,Writable> {
 		/* values is the line of the file */
 		String line = ((Text)values).toString();
 		/* Use a full blown Matcher, so I can pull out the grouped ID and Rating */
-		Matcher userRating = userRatingDate.matcher(line);
+		Matcher userRating = userRatingData.matcher(line);
 		/* Apparently only need one instance, the OutputCollector will create
 		 * its own copies of these objects.
 		 */
-		IntWritable userId = new IntWritable();
-		IntWritable ratingSum = new IntWritable();
+		IntWritable ratingDate = new IntWritable();
 		IntWritable ratingCount = new IntWritable(1);
-		
-		Writable[] writableArray = new IntWritable[2];
+
+		Writable[] writableArray = new IntWritable[1];
 		
 		IntArrayWritable ratingOutput = new IntArrayWritable(writableArray);
 
@@ -63,16 +62,13 @@ Reducer<WritableComparable,Writable,WritableComparable,Writable> {
 			/* This is the Movie ID line. Ignore it */
 		} else if (userRating.matches()) {
 			/* It is a line to pull data from */
-			/* 1st Regex Group is UserID */
-			userId.set(Integer.parseInt(userRating.group(1)));
-			/* 2nd Regex Group is Rating */
-			ratingSum.set(Integer.parseInt(userRating.group(2)));
-			
-			writableArray[0] = ratingSum;
-			writableArray[1] = ratingCount;
+			/* 3st Regex Group is the Rating Date */
+			ratingDate.set(Integer.parseInt(userRating.group(3)));
+
+			writableArray[0] = ratingCount;
 			
 			/* Add them to the output */
-			output.collect(userId, ratingOutput);
+			output.collect(ratingDate, ratingOutput);
 			
 		} else {
 			/* Should not occur. The input is in an invalid format, or
@@ -91,22 +87,19 @@ Reducer<WritableComparable,Writable,WritableComparable,Writable> {
 	public void reduce(WritableComparable key, Iterator values, 
 			OutputCollector output, Reporter reporter) throws IOException {
 
-			int sum = 0, count = 0;
+			int count = 0;
 			IntArrayWritable ratingInput = null, ratingOutput;
 			Writable[] inputArray = null;
-			IntWritable[] outputArray = new IntWritable[2];
+			IntWritable[] outputArray = new IntWritable[1];
 			
 			while(values.hasNext()) {
-
 				ratingInput = (IntArrayWritable)values.next();;
 				inputArray = (Writable[])ratingInput.get();; 
 				
-				sum += ((IntWritable)inputArray[0]).get();
-				count += ((IntWritable) inputArray[1]).get();
+				count += ((IntWritable)inputArray[0]).get();
 			}
 			
-			outputArray[0] = new IntWritable(sum);
-			outputArray[1] = new IntWritable(count);
+			outputArray[0] = new IntWritable(count);
 			ratingOutput = new IntArrayWritable(outputArray);
 			
 			output.collect(key, ratingOutput);
